@@ -85,7 +85,7 @@ export default {
 }
 @media (max-width: 768px) {
   .aplayer {
-    width: 100%;
+    width: 98%;
   }
 }
 @media (min-width: 769px) {
