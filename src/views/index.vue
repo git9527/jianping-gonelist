@@ -318,16 +318,9 @@ export default {
         }
       }
       console.log(process.env.NODE_ENV);
-      if (process.env.NODE_ENV === "production") {
-        this.isProduction = true;
-        this.baseurl =
-          decodeURIComponent(window.location.origin) +
-          decodeURIComponent(window.location.pathname);
-      } else {
-        this.baseurl =
-          decodeURIComponent(this.baseURL) +
-          decodeURIComponent(window.location.pathname);
-      }
+      this.baseurl =
+        decodeURIComponent(this.baseURL) +
+        decodeURIComponent(window.location.pathname);
 
       this.href = this.baseurl + this.hash;
       console.log("格式化后的hash：", this.hash);
