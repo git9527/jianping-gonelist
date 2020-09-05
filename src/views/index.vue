@@ -1,7 +1,7 @@
 <template>
   <div class="content">
     <div class="title">
-      <h1>7班专属网盘</h1>
+      <h2>7班专属网盘</h2>
     </div>
 
     <div class="list-wrapper">
@@ -148,7 +148,7 @@
       <img :src="img_src" alt="" style="width:100%;height:100%" />
     </Modal>
 
-    <M-Footer></M-Footer>
+    <!--    <M-Footer></M-Footer>-->
   </div>
 </template>
 
@@ -157,14 +157,13 @@ import { getAllFiles, logout, getReadme } from "../API/api";
 import { checkFileType } from "../utils/index";
 import DPlayer from "../components/Dplayer";
 import APlayer from "../components/Aplayer";
-import Footer from "../components/Footer";
 
 export default {
   name: "Index",
   components: {
     "D-Player": DPlayer,
-    "A-Player": APlayer,
-    "M-Footer": Footer
+    "A-Player": APlayer
+    // "M-Footer": Footer
   },
   data() {
     return {
