@@ -36,7 +36,7 @@ export default {
         duration: 0,
         render: h => {
           return h("span", [
-            "正在播放",
+            "正在播放-",
             h("strong", audio.fullName),
             h(
               "p",
@@ -85,7 +85,7 @@ export default {
 }
 @media (max-width: 768px) {
   .aplayer {
-    width: 98%;
+    width: 97%;
   }
 }
 @media (min-width: 769px) {

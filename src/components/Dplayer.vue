@@ -57,7 +57,7 @@ export default {
         duration: 0,
         render: h => {
           return h("span", [
-            "正在播放视频",
+            "正在播放视频-",
             h("strong", this.name),
             h(
               "p",
