@@ -32,7 +32,7 @@ if (process.env.NODE_ENV === "production") {
   startApp();
 } else {
   // 为开发环境配置...
-  Vue.prototype.baseURL = "https://gonelist.cugxuan.cn";
+  Vue.prototype.baseURL = "https://pan.zhangsn.me";
   new Vue({
     router,
     store,

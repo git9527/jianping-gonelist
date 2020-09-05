@@ -1,7 +1,7 @@
 <template>
   <div class="content">
     <div class="title">
-      <h1>GONEList</h1>
+      <h1>7班专属网盘</h1>
     </div>
 
     <div class="list-wrapper">
@@ -15,7 +15,7 @@
                 :key="item"
                 @click="toPath(index)"
               >
-                <span>{{ item === "/" ? "root" : item }}</span>
+                <span>{{ item === "/" ? " 首页 " : item }}</span>
                 <span style="padding-left:5px" v-if="item || item !== '/'"
                   >/
                 </span>
@@ -29,14 +29,14 @@
             />
           </div>
 
-          <div class="search-container">
-            <input
-              id="search"
-              v-model="keywords"
-              placeholder="Search"
-              @keyup="search()"
-            />
-          </div>
+          <!--          <div class="search-container">-->
+          <!--            <input-->
+          <!--              id="search"-->
+          <!--              v-model="keywords"-->
+          <!--              placeholder="Search"-->
+          <!--              @keyup="search()"-->
+          <!--            />-->
+          <!--          </div>-->
         </div>
 
         <div class="list-body-container">
@@ -62,12 +62,7 @@
                 </span>
                 <span>{{ row.name }}</span>
               </a>
-              <a
-                :href="baseurl + 'd' + row.path"
-                :title="baseurl + 'd' + row.path"
-                target="_blank"
-                v-else
-              >
+              <div v-else>
                 <span class="file-icon">
                   <i
                     class="fa"
@@ -75,8 +70,19 @@
                     aria-hidden="true"
                   ></i>
                 </span>
-                <span>{{ row.name }}</span>
-              </a>
+                <span
+                  @click.prevent="
+                    fileClick(
+                      row.name,
+                      isProduction
+                        ? baseurl + 'd' + row.path
+                        : row.download_url,
+                      index
+                    )
+                  "
+                  >{{ row.name }}</span
+                >
+              </div>
             </template>
             <template slot-scope="{ row }" slot="last_modify_time">
               {{ row.last_modify_time | formatTime }}
@@ -84,128 +90,44 @@
             <template slot-scope="{ row }" slot="size">
               {{ row.size | formatSize }}
             </template>
-            <template slot-scope="{ row, index }" slot="action">
-              <!-- 生产环境 -->
-              <div v-if="isProduction">
-                <span
-                  class="play"
-                  v-if="checkFile(row.name) === 'video'"
-                  @click="playVideo(baseurl + 'd' + row.path, index)"
-                >
-                  <i
-                    class="fa fa-stop"
-                    title="停止"
-                    aria-hidden="true"
-                    v-if="video.hash === hash && video.index === index"
-                  ></i>
-                  <i
-                    class="fa fa-play"
-                    title="播放"
-                    aria-hidden="true"
-                    v-else
-                  ></i>
-                </span>
-                <span
-                  class="play"
-                  v-else-if="checkFile(row.name) === 'audio'"
-                  @click="playAudio(baseurl + 'd' + row.path, index)"
-                >
-                  <i
-                    class="fa fa-stop"
-                    title="停止"
-                    aria-hidden="true"
-                    v-if="audio.hash === hash && audio.index === index"
-                  ></i>
-                  <i
-                    class="fa fa-play"
-                    title="播放"
-                    aria-hidden="true"
-                    v-else
-                  ></i>
-                </span>
-                <span
-                  class="play"
-                  title="预览"
-                  v-else-if="checkFile(row.name) === 'image'"
-                  @click="showImage(baseurl + 'd' + row.path, index)"
-                >
-                  <i class="fa fa-eye" aria-hidden="true"></i>
-                </span>
-              </div>
-              <!-- 开发环境 -->
-              <div v-else>
-                <span
-                  class="play"
-                  v-if="checkFile(row.name) === 'video'"
-                  @click="playVideo(row.download_url, index)"
-                >
-                  <i
-                    class="fa fa-stop"
-                    title="停止"
-                    aria-hidden="true"
-                    v-if="video.hash === hash && video.index === index"
-                  ></i>
-                  <i
-                    class="fa fa-play"
-                    title="播放"
-                    aria-hidden="true"
-                    v-else
-                  ></i>
-                </span>
-                <span
-                  class="play"
-                  v-else-if="checkFile(row.name) === 'audio'"
-                  @click="playAudio(row.download_url, index)"
-                >
-                  <i
-                    class="fa fa-stop"
-                    title="停止"
-                    aria-hidden="true"
-                    v-if="audio.hash === hash && audio.index === index"
-                  ></i>
-                  <i
-                    class="fa fa-play"
-                    title="播放"
-                    aria-hidden="true"
-                    v-else
-                  ></i>
-                </span>
-                <span
-                  class="play"
-                  title="预览"
-                  v-else-if="checkFile(row.name) === 'image'"
-                  @click="showImage(row.download_url, index)"
-                >
-                  <i class="fa fa-eye" aria-hidden="true"></i>
-                </span>
-              </div>
+            <template slot-scope="{ row }" slot="action">
+              <i
+                class="fa fa-download"
+                title="下载"
+                aria-hidden="true"
+                @click="
+                  downloadFile(
+                    isProduction ? baseurl + 'd' + row.path : row.download_url
+                  )
+                "
+              ></i>
             </template>
           </Table>
         </div>
       </div>
     </div>
 
-    <div class="readme">
-      <div class="card-header">
-        <svg
-          class="octicon octicon-book"
-          viewBox="0 0 16 16"
-          version="1.1"
-          width="16"
-          height="16"
-          aria-hidden="true"
-        >
-          <path
-            fill-rule="evenodd"
-            d="M3 5h4v1H3V5zm0 3h4V7H3v1zm0 2h4V9H3v1zm11-5h-4v1h4V5zm0 2h-4v1h4V7zm0 2h-4v1h4V9zm2-6v9c0 .55-.45 1-1 1H9.5l-1 1-1-1H2c-.55 0-1-.45-1-1V3c0-.55.45-1 1-1h5.5l1 1 1-1H15c.55 0 1 .45 1 1zm-8 .5L7.5 3H2v9h6V3.5zm7-.5H9.5l-.5.5V12h6V3z"
-          ></path>
-        </svg>
-        <h3>
-          README.md
-        </h3>
-      </div>
-      <div class="markdown-body" v-html="readme"></div>
-    </div>
+    <!--    <div class="readme">-->
+    <!--      <div class="card-header">-->
+    <!--        <svg-->
+    <!--          class="octicon octicon-book"-->
+    <!--          viewBox="0 0 16 16"-->
+    <!--          version="1.1"-->
+    <!--          width="16"-->
+    <!--          height="16"-->
+    <!--          aria-hidden="true"-->
+    <!--        >-->
+    <!--          <path-->
+    <!--            fill-rule="evenodd"-->
+    <!--            d="M3 5h4v1H3V5zm0 3h4V7H3v1zm0 2h4V9H3v1zm11-5h-4v1h4V5zm0 2h-4v1h4V7zm0 2h-4v1h4V9zm2-6v9c0 .55-.45 1-1 1H9.5l-1 1-1-1H2c-.55 0-1-.45-1-1V3c0-.55.45-1 1-1h5.5l1 1 1-1H15c.55 0 1 .45 1 1zm-8 .5L7.5 3H2v9h6V3.5zm7-.5H9.5l-.5.5V12h6V3z"-->
+    <!--          ></path>-->
+    <!--        </svg>-->
+    <!--        <h3>-->
+    <!--          README.md-->
+    <!--        </h3>-->
+    <!--      </div>-->
+    <!--      <div class="markdown-body" v-html="readme"></div>-->
+    <!--    </div>-->
     <!-- <My-DPlayer :video="video" ref="mydplayer" v-on:close="closePlayer" v-show="video.show"></My-DPlayer>  -->
     <D-Player
       v-on:closeVideo="closeV"
@@ -283,7 +205,7 @@ export default {
           slot: "size",
           key: "size",
           align: "right",
-          width: 100,
+          width: 110,
           sortable: true,
           //desc倒序升序 asc顺序降序
           sortMethod: (a, b, type) => {
@@ -293,7 +215,7 @@ export default {
           }
         },
         {
-          title: " ",
+          title: "操作",
           slot: "action",
           width: 100,
           align: "center"
@@ -369,6 +291,21 @@ export default {
     }
   },
   methods: {
+    fileClick(fileName, downloadUrl, index) {
+      const fileType = this.checkFile(fileName);
+      if (fileType === "video") {
+        this.playVideo(downloadUrl, index);
+      } else if (fileType === "image") {
+        this.showImage(downloadUrl, index);
+      } else if (fileType === "audio") {
+        this.playAudio(downloadUrl, index);
+      } else {
+        // download file
+      }
+    },
+    downloadFile(url) {
+      window.open(url, "_blank");
+    },
     init() {
       this.keywords = "";
       this.hash = decodeURIComponent(window.location.hash);

@@ -2,8 +2,7 @@
   <div id="footer">
     <span>
       Powered by
-      <a href="https://github.com/cugxuan/gonelist">GONEList</a> | Theme —
-      <a href="https://github.com/Sillywa/gonelist-web">GONEList-web</a>
+      <a href="https://github.com/cugxuan/gonelist">GONEList</a>
     </span>
   </div>
 </template>
