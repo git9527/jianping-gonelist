@@ -299,7 +299,7 @@ export default {
       } else if (fileType === "audio") {
         this.playAudio(downloadUrl, index);
       } else {
-        // download file
+        this.downloadFile(downloadUrl);
       }
     },
     downloadFile(url) {
