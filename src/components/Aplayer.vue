@@ -82,6 +82,7 @@ export default {
   position: fixed;
   left: 0;
   bottom: 0;
+  z-index: 10;
 }
 @media (max-width: 768px) {
   .aplayer {
