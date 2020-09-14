@@ -17,7 +17,7 @@ Vue.config.productionTip = false;
 if (process.env.NODE_ENV === "production") {
   // 为生产环境配置...
   let startApp = function() {
-    axios.get("serverconfig.json").then(res => {
+    axios.get("/serverconfig.json").then(res => {
       console.log(res);
       // 基础地址
       Vue.prototype.baseURL = res.data.baseURL;
