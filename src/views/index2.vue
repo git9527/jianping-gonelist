@@ -11,9 +11,9 @@
             <h3>
               <span><i class="fa fa-home" aria-hidden="true"></i> </span>
               <span
-                v-for="(item, index) in path"
+                v-for="(item, index) in pathStack"
                 :key="item"
-                @click="toPath(index)"
+                @click="toPreviousFolder(index)"
               >
                 <span>{{ item === "/" ? " 首页 " : item }}</span>
                 <span style="padding-left:5px" v-if="item || item !== '/'"
@@ -28,15 +28,6 @@
               title="返回上一级"
             />
           </div>
-
-          <!--          <div class="search-container">-->
-          <!--            <input-->
-          <!--              id="search"-->
-          <!--              v-model="keywords"-->
-          <!--              placeholder="Search"-->
-          <!--              @keyup="search()"-->
-          <!--            />-->
-          <!--          </div>-->
         </div>
 
         <div class="list-body-container">
@@ -44,18 +35,22 @@
             :loading="loading"
             no-data-text="暂无文件"
             :columns="header"
-            :data="files.children | filterData(reg, keywords)"
+            :data="files.children"
           >
             <template slot-scope="{ row, index }" slot="name">
               <a
+                v-if="row.is_folder"
                 :href="
-                  path.length === 1 ? href + row.name : href + '/' + row.name
+                  pathStack.length === 1
+                    ? href + row.name
+                    : href + '/' + row.name
                 "
                 :title="
-                  path.length === 1 ? href + row.name : href + '/' + row.name
+                  pathStack.length === 1
+                    ? href + row.name
+                    : href + '/' + row.name
                 "
-                v-if="row.is_folder"
-                @click.prevent="nextFile(index, row.name)"
+                @click.prevent="toSubFolder(index, row.name)"
               >
                 <span class="file-icon"
                   ><i class="fa fa-folder-open" aria-hidden="true"></i>
@@ -107,28 +102,6 @@
       </div>
     </div>
 
-    <!--    <div class="readme">-->
-    <!--      <div class="card-header">-->
-    <!--        <svg-->
-    <!--          class="octicon octicon-book"-->
-    <!--          viewBox="0 0 16 16"-->
-    <!--          version="1.1"-->
-    <!--          width="16"-->
-    <!--          height="16"-->
-    <!--          aria-hidden="true"-->
-    <!--        >-->
-    <!--          <path-->
-    <!--            fill-rule="evenodd"-->
-    <!--            d="M3 5h4v1H3V5zm0 3h4V7H3v1zm0 2h4V9H3v1zm11-5h-4v1h4V5zm0 2h-4v1h4V7zm0 2h-4v1h4V9zm2-6v9c0 .55-.45 1-1 1H9.5l-1 1-1-1H2c-.55 0-1-.45-1-1V3c0-.55.45-1 1-1h5.5l1 1 1-1H15c.55 0 1 .45 1 1zm-8 .5L7.5 3H2v9h6V3.5zm7-.5H9.5l-.5.5V12h6V3z"-->
-    <!--          ></path>-->
-    <!--        </svg>-->
-    <!--        <h3>-->
-    <!--          README.md-->
-    <!--        </h3>-->
-    <!--      </div>-->
-    <!--      <div class="markdown-body" v-html="readme"></div>-->
-    <!--    </div>-->
-    <!-- <My-DPlayer :video="video" ref="mydplayer" v-on:close="closePlayer" v-show="video.show"></My-DPlayer>  -->
     <D-Player
       v-on:closeVideo="closeV"
       ref="mydplayer"
@@ -147,8 +120,6 @@
     <Modal v-model="img_modal" title="图片预览" :footer-hide="true">
       <img :src="img_src" alt="" style="width:100%;height:100%" />
     </Modal>
-
-    <!--    <M-Footer></M-Footer>-->
   </div>
 </template>
 
@@ -163,7 +134,6 @@ export default {
   components: {
     "D-Player": DPlayer,
     "A-Player": APlayer
-    // "M-Footer": Footer
   },
   data() {
     return {
@@ -222,9 +192,8 @@ export default {
       ],
       loading: true,
       files: [],
-      path: [],
-      keywords: "",
-      reg: /""/,
+      pathStack: [],
+      fullPath: "",
       hash: "",
       // origin + parh + hash
       href: "",
@@ -280,13 +249,6 @@ export default {
         result = (size / 1024).toFixed(2) + "KB";
       }
       return result;
-    },
-    filterData(files, reg, keywords) {
-      if (!keywords) {
-        return files;
-      } else {
-        return files.filter(item => reg.test(item.name.toLowerCase()));
-      }
     }
   },
   methods: {
@@ -306,46 +268,16 @@ export default {
       window.open(url, "_blank");
     },
     init() {
-      this.keywords = "";
-      this.hash = decodeURIComponent(window.location.hash);
-      // hash为空或者hash为#/都认为hash为#/
-      if (!this.hash) {
-        this.hash = "#/";
-      } else {
-        if (this.hash !== "#/" && this.hash[this.hash.length - 1] === "/") {
-          // hash以/结尾，去掉结尾的/
-          this.hash = this.hash.slice(0, -1);
-        }
+      let currentPath = this.$route.path;
+      if (currentPath[currentPath.length - 1] === "/") {
+        currentPath = currentPath.slice(0, -1);
       }
-      console.log(process.env.NODE_ENV);
-      this.baseurl =
-        decodeURIComponent(this.baseURL) +
-        decodeURIComponent(window.location.pathname);
-
-      this.href = this.baseurl + this.hash;
-      console.log("格式化后的hash：", this.hash);
       // 通过search来查找对应的文件夹,需要decodeURI一下
-      this.path = this.hash.slice(1).split("/");
-      // 将最后的空元素删除
-      // 如果最后一个元素是 "" 就删
-      if (this.path[this.path.length - 1] === "") {
-        console.log("pop掉最后一个");
-        this.path.pop();
-      }
-      // 将hash置为/
-      if (this.path[0] === "") {
-        this.path[0] = "/";
-      }
-      console.log("path数组：", this.path);
-      let param = decodeURIComponent(window.location.hash);
-      if (param[param.length - 1] === "/") {
-        param = param.slice(1, -1);
-      } else {
-        param = param.slice(1);
-      }
-      console.log("请求的参数：", param);
+      this.pathStack = currentPath.split("/");
+      this.fullPath = this.pathStack.join("/");
+      console.log("pathStack数组：", this.pathStack);
       this.loading = true;
-      getAllFiles(this.baseURL, param, this.pass).then(res => {
+      getAllFiles(this.baseURL, currentPath, this.pass).then(res => {
         this.loading = false;
         if (res.code === 400) {
           window.location.href = `${this.baseURL}/login`;
@@ -360,7 +292,7 @@ export default {
           if (!this.files.children) {
             this.files.children = [];
           } else {
-            // 如果匹配到文件夹就直接下载
+            // 如果匹配到文件就直接下载
             if (!this.files.is_folder) {
               this.files.children = [];
               this.files.children.push(this.files);
@@ -371,56 +303,26 @@ export default {
           }
         }
       });
-      getReadme(this.baseURL, param, this.pass).then(res => {
+      getReadme(this.baseURL, currentPath, this.pass).then(res => {
         this.readme = res.data;
         //console.log(this.readme)
       });
     },
-    nextFile(index, name) {
-      console.log(name);
-      if (this.path.length === 1) {
-        this.hash = this.hash + name;
-      } else {
-        this.hash = this.hash + "/" + name;
-      }
-
-      window.location.hash = this.hash;
+    toSubFolder(index, name) {
+      console.log("go to sub folder:", name);
+      this.$router.push(this.fullPath + "/" + name);
     },
     back() {
-      //console.log(this.path.length)
-      if (this.path.length === 1) {
-        this.$Message.warning("已在根目录，无法返回");
-      } else {
-        this.path.pop();
-        this.hash = "";
-        for (let i = 0; i < this.path.length; i++) {
-          if (i === 0 || i === 1) {
-            this.hash = this.hash + this.path[i];
-          } else {
-            this.hash = this.hash + "/" + this.path[i];
-          }
-        }
-        window.location.hash = this.hash;
-      }
+      this.$router.go(-1);
     },
-    toPath(index) {
-      if (index + 1 !== this.path.length) {
-        this.hash = "";
-        this.path = this.path.slice(0, index + 1);
-        for (let i = 0; i < this.path.length; i++) {
-          if (i === 0 || i === 1) {
-            this.hash = this.hash + this.path[i];
-          } else {
-            this.hash = this.hash + "/" + this.path[i];
-          }
-        }
-        window.location.hash = this.hash;
+    toPreviousFolder(index) {
+      if (index + 1 !== this.pathStack.length) {
+        const target = this.pathStack.slice(0, index + 1);
+        console.log("to target folder", target, "index", index);
+        this.$router.push(target.length === 1 ? "/" : target.join("/"));
       } else {
         this.$Message.warning("已在该目录");
       }
-    },
-    search() {
-      this.reg = new RegExp(this.keywords.toLowerCase());
     },
     exit() {
       logout(this.baseURL).then(() => {
