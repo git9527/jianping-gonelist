@@ -1,9 +1,5 @@
 <template>
   <div class="content">
-    <div class="title">
-      <h2>高速Z网盘</h2>
-    </div>
-
     <div class="list-wrapper">
       <div class="list-container">
         <div class="header-container">
