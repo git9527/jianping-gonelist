@@ -91,7 +91,7 @@ export default {
 }
 @media (min-width: 769px) {
   .aplayer {
-    width: 400px;
+    width: 99%;
   }
 }
 /* .player-content {
