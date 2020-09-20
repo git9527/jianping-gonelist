@@ -1,34 +1,6 @@
-//让打包的时候输出可配置的文件
-var GenerateAssetPlugin = require("generate-asset-webpack-plugin");
-var createServerConfig = function(_compilation) {
-  let cfgJson = {
-    // 默认指向 window.location.origin
-    baseURL: "https://api.zhihuisuyuan.com/jp7"
-  };
-  return JSON.stringify(cfgJson);
-};
-
 module.exports = {
   // publicPath: ProjectConfig.publicPath,
   productionSourceMap: false,
-  configureWebpack: {
-    plugins: [
-      new GenerateAssetPlugin({
-        filename: "serverconfig.json",
-        fn: (compilation, cb) => {
-          cb(null, createServerConfig(compilation));
-        },
-        extraFiles: []
-      })
-    ]
-    // // 使用cdn引入常用包
-    // externals: {
-    //   'vue': "Vue",
-    //   "vue-router": "VueRouter",
-    //   "view-design":"viewDesign",
-    //   "axios": "axios"
-    // }
-  },
   pages: {
     index: {
       // page 的入口
@@ -42,6 +14,7 @@ module.exports = {
       title: "7班共享盘"
     }
   },
+  assetsDir: "static",
   pwa: {
     iconPaths: {
       favicon32: "favicon.ico",
