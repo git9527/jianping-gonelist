@@ -68,7 +68,8 @@
                       isProduction
                         ? baseurl + 'd' + row.path
                         : row.download_url,
-                      index
+                      index,
+                      row.size
                     )
                   "
                   >{{ row.name }}</span
@@ -90,7 +91,8 @@
                 @click="
                   downloadFile(
                     row.name,
-                    isProduction ? baseurl + 'd' + row.path : row.download_url
+                    isProduction ? baseurl + 'd' + row.path : row.download_url,
+                    row.size
                   )
                 "
               ></i>
@@ -251,7 +253,7 @@ export default {
     }
   },
   methods: {
-    fileClick(fileName, downloadUrl, index) {
+    fileClick(fileName, downloadUrl, index, size) {
       const fileType = this.checkFile(fileName);
       if (fileType === "video") {
         this.playVideo(downloadUrl, index);
@@ -260,12 +262,12 @@ export default {
       } else if (fileType === "audio") {
         this.playAudio(downloadUrl, index);
       } else {
-        this.downloadFile(fileName, downloadUrl);
+        this.downloadFile(fileName, downloadUrl, size);
       }
     },
-    downloadFile(fileName, url) {
-      const fileType = this.checkFile(fileName);
-      if (fileType === "image" || fileType === "audio") {
+    downloadFile(fileName, url, size) {
+      console.log("file size is", size / 1024 / 1024, "MB");
+      if (size / 1024 / 1024 <= 5) {
         axios({
           url: url,
           method: "GET",
@@ -315,7 +317,11 @@ export default {
               console.log("下载", this.files.download_url);
               //window.open(this.files.download_url, "_blank")
               // window.location.href = this.files.download_url;
-              this.downloadFile(this.files.name, this.files.download_url);
+              this.downloadFile(
+                this.files.name,
+                this.files.download_url,
+                this.files.size
+              );
             }
           }
         }
