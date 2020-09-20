@@ -3,7 +3,7 @@ var GenerateAssetPlugin = require("generate-asset-webpack-plugin");
 var createServerConfig = function(_compilation) {
   let cfgJson = {
     // 默认指向 window.location.origin
-    baseURL: "https://pan.zhangsn.me"
+    baseURL: "https://api.zhihuisuyuan.com/jp7"
   };
   return JSON.stringify(cfgJson);
 };
