@@ -83,11 +83,13 @@
             </template>
             <template slot-scope="{ row }" slot="action">
               <i
+                v-if="!row.is_folder"
                 class="fa fa-download"
                 title="下载"
                 aria-hidden="true"
                 @click="
                   downloadFile(
+                    row.name,
                     isProduction ? baseurl + 'd' + row.path : row.download_url
                   )
                 "
@@ -124,6 +126,7 @@ import { getAllFiles, logout, getReadme } from "../API/api";
 import { checkFileType } from "../utils/index";
 import DPlayer from "../components/Dplayer";
 import APlayer from "../components/Aplayer";
+import axios from "axios";
 
 export default {
   name: "Index",
@@ -257,11 +260,28 @@ export default {
       } else if (fileType === "audio") {
         this.playAudio(downloadUrl, index);
       } else {
-        this.downloadFile(downloadUrl);
+        this.downloadFile(fileName, downloadUrl);
       }
     },
-    downloadFile(url) {
-      window.open(url, "_blank");
+    downloadFile(fileName, url) {
+      const fileType = this.checkFile(fileName);
+      if (fileType === "image" || fileType === "audio") {
+        axios({
+          url: url,
+          method: "GET",
+          responseType: "blob"
+        }).then(response => {
+          var fileURL = window.URL.createObjectURL(new Blob([response.data]));
+          var fileLink = document.createElement("a");
+          fileLink.href = fileURL;
+          fileLink.setAttribute("download", fileName);
+          document.body.appendChild(fileLink);
+
+          fileLink.click();
+        });
+      } else {
+        window.open(url, "_blank");
+      }
     },
     init() {
       let currentPath = this.$route.path;
@@ -294,7 +314,8 @@ export default {
               this.files.children.push(this.files);
               console.log("下载", this.files.download_url);
               //window.open(this.files.download_url, "_blank")
-              window.location.href = this.files.download_url;
+              // window.location.href = this.files.download_url;
+              this.downloadFile(this.files.name, this.files.download_url);
             }
           }
         }
