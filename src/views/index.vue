@@ -1,5 +1,8 @@
 <template>
   <div class="content">
+    <div class="title">
+      <h2>{{ siteHeader }}</h2>
+    </div>
     <div class="list-wrapper">
       <div class="list-container">
         <div class="header-container">
@@ -124,7 +127,7 @@
 </template>
 
 <script>
-import { getAllFiles, logout, getReadme } from "../API/api";
+import { getAllFiles, logout, getReadme, getSiteInfo } from "../API/api";
 import { checkFileType } from "../utils/index";
 import DPlayer from "../components/Dplayer";
 import APlayer from "../components/Aplayer";
@@ -217,7 +220,8 @@ export default {
       pass: "",
       pass_count: 0,
       img_modal: false,
-      img_src: ""
+      img_src: "",
+      siteHeader: ""
     };
   },
   created() {
@@ -295,7 +299,7 @@ export default {
       this.fullPath = this.pathStack.join("/");
       console.log("pathStack数组：", this.pathStack);
       this.loading = true;
-      getAllFiles(this.baseURL, currentPath, this.pass).then(res => {
+      getAllFiles(currentPath, this.pass).then(res => {
         this.loading = false;
         if (res.code === 400) {
           window.location.href = `${this.baseURL}/login`;
@@ -326,9 +330,13 @@ export default {
           }
         }
       });
-      getReadme(this.baseURL, currentPath, this.pass).then(res => {
+      getReadme(currentPath, this.pass).then(res => {
         this.readme = res.data;
-        //console.log(this.readme)
+      });
+      getSiteInfo().then(res => {
+        const body = res.data;
+        document.title = body.HtmlTitle;
+        this.siteHeader = body.SiteHeader;
       });
     },
     toSubFolder(index, name) {
@@ -348,7 +356,7 @@ export default {
       }
     },
     exit() {
-      logout(this.baseURL).then(() => {
+      logout().then(() => {
         window.location.hash = "";
       });
     },

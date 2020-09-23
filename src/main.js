@@ -13,8 +13,6 @@ Vue.component("Input", Input);
 Vue.component("Modal", Modal);
 Vue.config.productionTip = false;
 
-Vue.prototype.baseURL = "https://api.zhihuisuyuan.com/jp7";
-
 new Vue({
   router,
   store,

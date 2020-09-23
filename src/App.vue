@@ -6,7 +6,6 @@
 
 <script>
 import "view-design/dist/styles/iview.css";
-// import Index from "@/views/index"
 export default {};
 </script>
 

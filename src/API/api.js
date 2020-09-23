@@ -1,9 +1,13 @@
 import request from "../utils/request";
 
-export function getAllFiles(baseURL, path, pass = "") {
+export function getSiteInfo() {
+  return request("/info/site");
+}
+
+export function getAllFiles(path, pass = "") {
   return request({
     method: "get",
-    url: `${baseURL}/onedrive/getpath`,
+    url: "/onedrive/getpath",
     params: {
       path: path || "/"
     },
@@ -35,16 +39,16 @@ export function getAllFiles(baseURL, path, pass = "") {
   //   })
   // }
 }
-export function logout(baseURL) {
+export function logout() {
   return request({
     method: "get",
-    url: `${baseURL}/cancelLogin`
+    url: "/cancelLogin"
   });
 }
-export function getReadme(baseURL, path, pass = "") {
+export function getReadme(path, pass = "") {
   return request({
     method: "get",
-    url: `${baseURL}/README`,
+    url: "/README",
     params: {
       path: path || "/"
     },
