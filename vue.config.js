@@ -23,5 +23,6 @@ module.exports = {
       maskIcon: "favicon.ico",
       msTileImage: "favicon.ico"
     }
-  }
+  },
+  transpileDependencies: [/node_modules[/\\\\](view-design|)[/\\\\]/]
 };
