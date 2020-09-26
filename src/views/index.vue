@@ -14,7 +14,7 @@
                 :key="item"
                 @click="toPreviousFolder(index)"
               >
-                <span>{{ item === "/" ? " 首页 " : item }}</span>
+                <span>{{ item === "/" || item === "" ? " 首页 " : item }}</span>
                 <span style="padding-left:5px" v-if="item || item !== '/'"
                   >/
                 </span>
@@ -41,13 +41,13 @@
                 v-if="row.is_folder"
                 :href="
                   pathStack.length === 1
-                    ? href + row.name
-                    : href + '/' + row.name
+                    ? row.name
+                    : pathStack.join('/') + '/' + row.name
                 "
                 :title="
                   pathStack.length === 1
-                    ? href + row.name
-                    : href + '/' + row.name
+                    ? row.name
+                    : pathStack.join('/') + '/' + row.name
                 "
                 @click.prevent="toSubFolder(index, row.name)"
               >
@@ -57,26 +57,32 @@
                 <span>{{ row.name }}</span>
               </a>
               <div v-else>
-                <span class="file-icon">
-                  <i
-                    class="fa"
+                <div v-if="supportedFile(row.name)">
+                  <span class="file-icon">
+                    <i
+                      class="fa"
+                      v-bind:class="['fa-file-' + checkFile(row.name) + '-o']"
+                      aria-hidden="true"
+                    ></i>
+                  </span>
+                  <span
+                    @click.prevent="
+                      fileClick(row.name, baseurl + '/d/' + row.path, index)
+                    "
+                    >{{ row.name }}</span
+                  >
+                </div>
+                <div v-else>
+                  <a
+                    class="fa file-download-prefix"
                     v-bind:class="['fa-file-' + checkFile(row.name) + '-o']"
                     aria-hidden="true"
-                  ></i>
-                </span>
-                <span
-                  @click.prevent="
-                    fileClick(
-                      row.name,
-                      isProduction
-                        ? baseurl + 'd' + row.path
-                        : row.download_url,
-                      index,
-                      row.size
-                    )
-                  "
-                  >{{ row.name }}</span
-                >
+                    :href="baseurl + '/d/' + row.path"
+                    :title="baseurl + '/d/' + row.path"
+                  >
+                    <span>{{ row.name }}</span>
+                  </a>
+                </div>
               </div>
             </template>
             <template slot-scope="{ row }" slot="last_modify_time">
@@ -86,19 +92,13 @@
               {{ row.size | formatSize }}
             </template>
             <template slot-scope="{ row }" slot="action">
-              <i
-                v-if="!row.is_folder"
+              <a
                 class="fa fa-download"
-                title="下载"
-                aria-hidden="true"
-                @click="
-                  downloadFile(
-                    row.name,
-                    isProduction ? baseurl + 'd' + row.path : row.download_url,
-                    row.size
-                  )
-                "
-              ></i>
+                :href="baseurl + '/d/' + row.path"
+                :title="baseurl + '/d/' + row.path"
+                v-if="!row.is_folder"
+              >
+              </a>
             </template>
           </Table>
         </div>
@@ -131,7 +131,7 @@ import { getAllFiles, logout, getReadme, getSiteInfo } from "../API/api";
 import { checkFileType } from "../utils/index";
 import DPlayer from "../components/Dplayer";
 import APlayer from "../components/Aplayer";
-import axios from "axios";
+import config from "../config/index";
 
 export default {
   name: "Index",
@@ -199,10 +199,7 @@ export default {
       pathStack: [],
       fullPath: "",
       hash: "",
-      // origin + parh + hash
-      href: "",
-      // origin + path
-      baseurl: "",
+      baseurl: config.remoteHost,
       video: {
         show: false,
         index: -1, // 点击的元素
@@ -214,7 +211,6 @@ export default {
         index: -1,
         hash: ""
       },
-      isProduction: false,
       readme: "",
       modal: false,
       pass: "",
@@ -257,7 +253,11 @@ export default {
     }
   },
   methods: {
-    fileClick(fileName, downloadUrl, index, size) {
+    supportedFile(fileName) {
+      const fileType = this.checkFile(fileName);
+      return ["video", "image", "audio"].indexOf(fileType) > -1;
+    },
+    fileClick(fileName, downloadUrl, index) {
       const fileType = this.checkFile(fileName);
       if (fileType === "video") {
         this.playVideo(downloadUrl, index);
@@ -266,28 +266,11 @@ export default {
       } else if (fileType === "audio") {
         this.playAudio(downloadUrl, index);
       } else {
-        this.downloadFile(fileName, downloadUrl, size);
+        this.downloadFile(fileName, downloadUrl);
       }
     },
-    downloadFile(fileName, url, size) {
-      console.log("file size is", size / 1024 / 1024, "MB");
-      if (size / 1024 / 1024 <= 5) {
-        axios({
-          url: url,
-          method: "GET",
-          responseType: "blob"
-        }).then(response => {
-          var fileURL = window.URL.createObjectURL(new Blob([response.data]));
-          var fileLink = document.createElement("a");
-          fileLink.href = fileURL;
-          fileLink.setAttribute("download", fileName);
-          document.body.appendChild(fileLink);
-
-          fileLink.click();
-        });
-      } else {
-        window.open(url, "_blank");
-      }
+    downloadFile(fileName, url) {
+      window.open(url, "_blank");
     },
     init() {
       let currentPath = this.$route.path;
@@ -302,7 +285,7 @@ export default {
       getAllFiles(currentPath, this.pass).then(res => {
         this.loading = false;
         if (res.code === 400) {
-          window.location.href = `${this.baseURL}/login`;
+          window.location.href = this.baseurl + "/loginmg";
         } else if (res.code === 10002) {
           this.$Message.error(res.msg);
         } else if (res.code === 10007) {

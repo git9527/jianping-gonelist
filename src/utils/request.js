@@ -1,10 +1,11 @@
 import axios from "axios";
 import Vue from "vue";
+import config from "../config/index";
+
 // 创建实例时设置配置的默认值
 var service = axios.create({
   timeout: 15000,
-  baseURL: "https://api.zhihuisuyuan.com/go"
-  // baseURL: "http://localhost:8000"
+  baseURL: config.remoteHost
 });
 // 添加响应拦截器
 service.interceptors.response.use(
