@@ -67,7 +67,7 @@
                   </span>
                   <span
                     @click.prevent="
-                      fileClick(row.name, baseurl + '/d/' + row.path, index)
+                      fileClick(row.name, getDownloadUrl(row), index)
                     "
                     >{{ row.name }}</span
                   >
@@ -77,8 +77,8 @@
                     class="fa file-download-prefix"
                     v-bind:class="['fa-file-' + checkFile(row.name) + '-o']"
                     aria-hidden="true"
-                    :href="baseurl + '/d/' + row.path"
-                    :title="baseurl + '/d/' + row.path"
+                    :href="getDownloadUrl(row)"
+                    :title="getDownloadUrl(row)"
                   >
                     <span>{{ row.name }}</span>
                   </a>
@@ -94,8 +94,8 @@
             <template slot-scope="{ row }" slot="action">
               <a
                 class="fa fa-download"
-                :href="baseurl + '/d/' + row.path"
-                :title="baseurl + '/d/' + row.path"
+                :href="getDownloadUrl(row)"
+                :title="getDownloadUrl(row)"
                 v-if="!row.is_folder"
               >
               </a>
@@ -132,6 +132,8 @@ import { checkFileType } from "../utils/index";
 import DPlayer from "../components/Dplayer";
 import APlayer from "../components/Aplayer";
 import config from "../config/index";
+import Vue from "vue";
+import uweb from "vue-uweb";
 
 export default {
   name: "Index",
@@ -320,6 +322,7 @@ export default {
         const body = res.data;
         document.title = body.HtmlTitle;
         this.siteHeader = body.SiteHeader;
+        Vue.use(uweb, body.SiteId);
       });
     },
     toSubFolder(index, name) {
@@ -431,6 +434,9 @@ export default {
     showImage(url, _index) {
       this.img_modal = true;
       this.img_src = url;
+    },
+    getDownloadUrl(row) {
+      return this.baseurl + "/d/" + row.path;
     }
   }
 };
